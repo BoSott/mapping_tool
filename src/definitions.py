@@ -1,38 +1,33 @@
-import os
+# gives definitions about static path variables and encompasses logger settings
 import logging.config
 import types
+from pathlib import Path
 
 # code from: https://gitlab.gistools.geog.uni-heidelberg.de/giscience/disaster-tools
 # /health_access/isochrone_access/-/blob/master/src/definitions.py
 
-ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
+ROOT_DIR = Path.cwd()
 
-CONFIG_DIR = os.path.join(ROOT_DIR, "../config/")
+CONFIG_DIR = ROOT_DIR / "config"
 
-# CONFIG_PATH = os.path.join(CONFIG_DIR, "config.json")
+DATA_PATH = ROOT_DIR / "data"
 
-DATA_PATH = os.path.join(ROOT_DIR, "../data/")
+LOGGING_CONFIG_PATH = CONFIG_DIR / "logging.cfg"
 
-LOGGING_CONFIG_PATH = os.path.join(CONFIG_DIR, "logging.cfg")
+LOG_PATH = ROOT_DIR / "logs"
 
-LOG_PATH = os.path.join(ROOT_DIR, "../logs/")
+if not DATA_PATH.exists():
+    DATA_PATH.mkdir()
 
-# FILTERS_PATH = os.path.join(CONFIG_DIR, "subject_filters.json")
+if not LOG_PATH.exists():
+    LOG_PATH.mkdir()
 
-if not os.path.exists(DATA_PATH):
-    os.mkdir(DATA_PATH)
-
-if not os.path.exists(LOG_PATH):
-    os.mkdir(LOG_PATH)
-
-LOGGING_FILE_PATH = os.path.join(LOG_PATH, "mapper.log")
+LOGGING_FILE_PATH = LOG_PATH / "mapperlogger.log"
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": True,
     "formatters": {
-        "standard": {
-            "format": "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
-        },
+        "standard": {"format": "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"},
     },  # noqa E501
     "handlers": {
         "console": {
@@ -50,8 +45,12 @@ LOGGING_CONFIG = {
         },
     },
     "loggers": {
-        "root": {"handlers": ["console"], "level": "INFO"},
-        "mapper": {"handlers": ["console", "file"], "level": "INFO", "propagate": True},
+        "root": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "mapper": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
 logging.config.dictConfig(LOGGING_CONFIG)
@@ -77,9 +76,7 @@ def alter_logger_format(self, identifier: str, subject: str):
 
 def reset_logger_format(self):
     """Reset logger format to standard scheme."""
-    formatter = logging.Formatter(
-        "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
-    )  # noqa E501
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(funcName)s - %(message)s")  # noqa E501
     for item in self.handlers:
         item.setFormatter(formatter)
 
