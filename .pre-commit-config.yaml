@@ -3,7 +3,7 @@ repos:
     rev: v4.0.1
     hooks:
     -   id: check-yaml
-    -   id: end-of-file-fixer
+    # -   id: end-of-file-fixer
     -   id: trailing-whitespace
   - repo: https://github.com/psf/black
     rev: 21.9b0
@@ -16,5 +16,5 @@ repos:
     hooks:
       - id: flake8
         additional_dependencies: [flake8-docstrings, pep8-naming]
-        args: ["--max-line-length=131", "--ignore=D100"]
+        # args: ["--max-line-length=131", "--ignore=D100"]
         exclude: ^src/(test.py|test.ipynb)
