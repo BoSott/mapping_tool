@@ -35,3 +35,35 @@ if __name__=="__main__":
     # df2 = change_crs(df, 3857)
     # print(df2.iloc[:,-1][0].crs)
     pass
+
+
+
+
+
+
+##################### ohsome API
+def helper1():
+    testpolstr = Path("C:/Users/Bosse/Documents/Uni/2_semester/Advanced_Geo/mapping/mapping_tool/data/testpolygon.geojson")
+    testpol = gpd.read_file(testpolstr)
+    time = None
+    tagfilter1="highway=* and type:way"
+    properties="tags"
+    name1="highways"
+    return name1, testpol, tagfilter1, time, properties
+
+
+def helper2():
+    testpolstr = Path("C:/Users/Bosse/Documents/Uni/2_semester/Advanced_Geo/mapping/mapping_tool/data/testpolygon.geojson")
+    testpol = gpd.read_file(testpolstr)
+    time = None
+    tagfilter2="building=* and geometry:polygon"
+    properties="tags"
+    name2="buildings"
+    return name2, testpol, tagfilter2, time, properties
+
+if __name__=="__main__":
+    # name1, testpol1, tagfilter1, time1, properties1 = helper1()
+    name2, testpol2, tagfilter2, time2, properties2 = helper2()
+    
+    # download_osm(name=name1, filter=tagfilter1, time=time1, bpolys=testpol1, properties=properties1)
+    download_osm(name=name2, filter=tagfilter2, time=time2, bpolys=testpol2, properties=properties2)

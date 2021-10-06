@@ -89,7 +89,7 @@ maybe improve polygon by including https://www.geoboundaries.org/index.html#getd
 - download data from ohsome
 - load iput with Path from pathlib
 - create static map with plotly
-- 
+-
 
 
 
@@ -129,12 +129,12 @@ https://towardsdatascience.com/visualizing-geospatial-data-in-python-e070374fe62
 guide to set up a mapping tool for automatic OSM downloading and displaying as a map
 including:
 - python environment with conda -> vs poetry? https://mitelman.engineering/blog/python-best-practice/automating-python-best-practices-for-a-new-project/
-- project structure 
+- project structure
 - git and pre-commit hooks (black and flake8 -> PEP8 style guide)
 - logging
 - testing [pytest](https://mitelman.engineering/blog/python-best-practice/automating-python-best-practices-for-a-new-project/)
 - documentation
-- packages: 
+- packages:
     - Path management using pathlib (?)
     - Clicks for a command line project
     - ohsome for downloading OSM data
@@ -168,4 +168,3 @@ change txt input to json
 improve logging: -> errors are not logged well
 1. https://coderzcolumn.com/tutorials/python/logging-config-simple-guide-to-configure-loggers-from-dictionary-and-config-files-in-python
 2. https://coderzcolumn.com/tutorials/python/logging-simple-guide-to-log-events-in-python
-
