@@ -1,4 +1,6 @@
-data/
-venv/
-logs/
+data/*
+venv/*
+logs/*
 src/test*
+.vscode/
+ohsome_log/*
