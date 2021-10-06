@@ -16,6 +16,9 @@ LOGGING_CONFIG_PATH = CONFIG_DIR / "logging.cfg"
 
 LOG_PATH = ROOT_DIR / "logs"
 
+INPUT_PATH_DOWNLOAD = DATA_PATH / "input_download.txt"
+INPUT_PATH_PLOTLY = DATA_PATH / "input_plotly.txt"
+
 if not DATA_PATH.exists():
     DATA_PATH.mkdir()
 
@@ -28,6 +31,7 @@ LOGGING_CONFIG = {
     "disable_existing_loggers": True,
     "formatters": {
         "standard": {"format": "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"},
+        "error": {"format": "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"},
     },  # noqa E501
     "handlers": {
         "console": {
@@ -55,6 +59,8 @@ LOGGING_CONFIG = {
 }
 logging.config.dictConfig(LOGGING_CONFIG)
 
+# logger = logging.getLogger(__name__)
+
 logger = logging.getLogger("mapper")
 # logging.getLogger("shapely").setLevel(logging.WARNING)
 # logging.getLogger("oauth2client.crypt").setLevel(logging.WARNING)
@@ -65,11 +71,9 @@ logger = logging.getLogger("mapper")
 # logging.getLogger("fiona.collection").setLevel(logging.WARNING)
 
 
-def alter_logger_format(self, identifier: str, subject: str):
+def alter_logger_format(self, name: str, filter: str):
     """Take an logger object and change the format, for better details."""
-    formatter = logging.Formatter(
-        f"%(asctime)s - %(levelname)s - %(funcName)s - {identifier} - {subject} - %(message)s"
-    )  # noqa E501
+    formatter = logging.Formatter(f"%(asctime)s - %(levelname)s - %(funcName)s - {name} - {filter} - %(message)s")  # noqa E501
     for item in self.handlers:
         item.setFormatter(formatter)
 
