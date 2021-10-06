@@ -2,5 +2,7 @@ data/*
 venv/*
 logs/*
 src/test*
-.vscode/
+.vscode/*
 ohsome_log/*
+src/__pychache__/*
+src/logs/*
