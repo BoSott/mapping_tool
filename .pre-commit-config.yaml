@@ -16,5 +16,5 @@ repos:
     hooks:
       - id: flake8
         additional_dependencies: [flake8-docstrings, pep8-naming]
-        args: ["--max-line-length=131", "--ignore=D100, E266"]
+        args: ["--max-line-length=131", "--ignore=D100, E266, E731, D401"]
         exclude: ^src/(test.py|test.ipynb)
