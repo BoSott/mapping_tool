@@ -59,6 +59,8 @@ def get_params(input_file):
 
     params = [x.split(",") for x in input_params]
 
+    params = [list(map(str.strip, params[x])) for x in range(len(params))]  # strips input of whitespaces
+
     df = pd.DataFrame(columns=params[0], data=params[1:])
 
     return df
