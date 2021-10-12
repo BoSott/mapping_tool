@@ -89,8 +89,12 @@ maybe improve polygon by including https://www.geoboundaries.org/index.html#getd
 - download data from ohsome
 - load iput with Path from pathlib
 - create static map with plotly
--
 
+
+
+# MAPPING
+### basemap
+- use xyzservices as tile provider
 
 
 
@@ -120,9 +124,13 @@ https://towardsdatascience.com/visualizing-geospatial-data-in-python-e070374fe62
 
 
 
+## bokeh
+major problem: does not take geometry objects but only fking coordinates! MultiLinestring stuff was quite some work to get right
+so eine Kacke.. GeoJSONDataSource hilft weiter wenn man das richtige File lädt..
+https://pauliacomi.com/2020/06/07/plotly-v-bokeh.html
 
-
-
+-> widget distorts the whole plot when you use it as before everything else
+-> if you move the area of the plot first, no distortion happens
 
 # text
 
