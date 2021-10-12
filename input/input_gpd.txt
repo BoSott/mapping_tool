@@ -1,0 +1,4 @@
+Name, Color
+bicycle_parking,#417029
+highways,grey
+buildings,#094884
