@@ -4,5 +4,5 @@ logs/*
 src/test*
 .vscode/*
 ohsome_log/*
-src/__pychache__/*
+src/__pychache__/
 src/logs/*
