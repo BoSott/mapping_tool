@@ -1,4 +1,5 @@
-from definitions import logger
+from bokeh.models.widgets.inputs import ColorPicker, Spinner
+from definitions import DATA_PATH, logger_f
 import pandas as pd
 from datetime import datetime
 import contextily as cx
@@ -7,16 +8,34 @@ from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 from matplotlib_scalebar.scalebar import ScaleBar
+from bokeh.models import (
+    ColumnDataSource,
+    GeoJSONDataSource,
+)
+from bokeh.layouts import column, gridplot, grid
+from bokeh.layouts import row as brow
+from bokeh.plotting import figure, save
+from bokeh.tile_providers import get_provider
+from xyzservices import TileProvider
+import random
 
 
-# made for two layer
-def map_plotly(map_layer):
-    """Plot all given layers on one map, based on the given parameters.
+# geopandasmapping
+def map_gpd(map_layer, plot_package, crs_epsg, provider, title, save_plot):
+    """Create gpd plotly plot with given layers and basemap.
 
     Args:
-        map_layer ([DataFrame]): [DataFrame with parameters and geometry GeoDataFrame as last column]
+        reverse_map (DataFrame): DataFrame. First columns are layer parameter with last column as layer GeoDataFrame
+        plot_package (String): which plot package should be used
+        crs_epsg (String): used EPSG
+        basemap (String): Provider of the Contextily / xyzservices provider
+        title (String): Title of the plot
+        save_plot (Boolean): True: Save plot.
+
+    Returns:
+        gpd plotly figure: One plot with all given layers and given baselayer
     """
-    logger.info("start mapping")
+    logger_f.info("start mapping")
     start_time = datetime.now()
 
     fig, ax = plt.subplots(figsize=(12, 8))
@@ -29,8 +48,7 @@ def map_plotly(map_layer):
         color = row[1]
         geometry = row[-1]
 
-        logger.alter_format(name, "plotly")
-        logger.info(f"start to plot: {row[0]}")
+        logger_f.info(f"start to plot: {row[0]}")
 
         # create colormap based on the given color
         cmap = ListedColormap([color], name=name)
@@ -49,16 +67,22 @@ def map_plotly(map_layer):
         elif geometry.iloc[:, -1][index].geom_type == ("Polygon" or "MultiPolygon" or "GeometryCollection"):
             legend_element = Patch(facecolor=color, edgecolor="black", label=name)
         else:
-            logger.info(f"{name} layer could not be displayed in the legend due to mismatched geometrytype")
+            logger_f.info(f"{name} layer could not be displayed in the legend due to mismatched geometrytype")
         legend_elements.append(legend_element)
 
     # reverse legend to account for the right order
     legend_elements = legend_elements[::-1]
 
-    cx.add_basemap(ax, source=cx.providers.Stamen.TonerLite)
+    providers = get_cx_providers()
+
+    cx.add_basemap(ax, source=providers[provider], crs=f"EPSG:{crs_epsg}")
+
+    # optional to bring the labels upfront
+    # if time, make it adjustable as well
+    cx.add_basemap(ax, source=cx.providers.Stamen.TonerLabels, crs=f"EPSG:{crs_epsg}", zorder=1000)
 
     # add legend and define position
-    ax.legend(title="OSM layer", handles=legend_elements, frameon=False)
+    ax.legend(title=title, handles=legend_elements, frameon=False)
     leg = ax.get_legend()  # set legend's position and size
     leg.set_bbox_to_anchor((1.18, 0.3))
 
@@ -87,11 +111,13 @@ def map_plotly(map_layer):
     )
     plt.tight_layout()  # adjust padding
 
-    # plt.savefig("somename.png") # optional
+    # save if wanted, default False
+    if save_plot:
+        save_to = DATA_PATH / f"{title}.png"
+        plt.savefig(save_to)
 
     end_time = datetime.now() - start_time
-    logger.info(f"download finished, Time elapsed: {end_time}")
-
+    logger_f.info(f"mapping of {title} finished, Time elapsed: {end_time}")
     plt.show()
 
 
@@ -108,3 +134,280 @@ def change_crs(map_layer, crs_epsg):
     layers = pd.Series([lay.to_crs(epsg=crs_epsg) for lay in map_layer.iloc[:, -1]])
     map_layer.iloc[:, -1] = layers
     return map_layer
+
+
+def get_cx_providers():
+    """Get all built in providers of contextily in a flat directory.
+
+    Returns:
+        dictionary: flat dictionary of all contextily basemap providers
+    """
+    # code from: https://contextily.readthedocs.io/en/latest/providers_deepdive.html
+    providers = {}
+
+    def get_providers(provider):
+        if "url" in provider:
+            providers[provider["name"]] = provider
+        else:
+            for prov in provider.values():
+                get_providers(prov)
+
+    get_providers(cx.providers)
+
+    return providers
+
+
+def map_bokeh(map_layer, plot_package, crs_epsg, provider, title, save_plot, add_func=True):
+    """Create bokeh plot with given layers and basemap.
+
+    Args:
+        reverse_map (DataFrame): DataFrame. First columns are layer parameter with last column as layer GeoDataFrame
+        plot_package (String): which plot package should be used
+        crs_epsg (String): used EPSG
+        basemap (String): Provider of the Contextily / xyzservices provider
+        title (String): Title of the plot
+        save_plot (Boolean): True: Save plot.
+        add_func(Boolean): add additional functionality widgets to the plot (True) or not (False). Default: True.
+
+    Returns:
+        Bokeh plot: One plot with all given layers and given baselayer
+    """
+    logger_f.info("start mapping bokeh")
+    start_time = datetime.now()
+
+    # TODO could add some sort of hover tool -> but would need to make the column adjustable
+
+    p = figure(
+        title=title, plot_height=950, plot_width=950, toolbar_location="right", tools="pan, wheel_zoom, box_zoom, reset , save"
+    )
+
+    # hide grid
+    p.xgrid.grid_line_color = None
+    p.ygrid.grid_line_color = None
+    # hide axes
+    p.axis.visible = False
+    picker = None
+    pickers = []
+    spinners = []
+
+    for index, row in map_layer.iterrows():
+        name = row[0].capitalize()
+        color = row[1]
+        geom_layer = row[-1]
+
+        logger_f.info(f"start to plot: {row[0]}")
+
+        geosource = GeoJSONDataSource(geojson=geom_layer.to_json())
+
+        if geom_layer.iloc[:, -1][index].geom_type == ("Point" or "MultiPoint"):
+            ## POINTS
+            # p.circle('x', 'y',
+            #          source=geosource,
+            #          color=color,
+            #          size=10,
+            #          legend_label= name)
+            points = p.circle("x", "y", source=geosource, color=color, size=10, legend_label=name)
+            # p.add_tools(HoverTool(
+            #     renderers = [points],
+            #     tooltips = [("Name", name)]
+            # ))
+            picker = ColorPicker(title=f"{name} Point Color", color=color)
+            picker.js_link("color", points.glyph, "fill_color")
+            pickers.append(picker)
+
+            spinner = Spinner(title=f"{name} size", low=1, high=40, step=1, value=10, width=80)
+            spinner.js_link("value", points.glyph, "size")
+
+            spinners.append(spinner)
+
+        elif geom_layer.iloc[:, -1][index].geom_type == ("LineString" or "LinearRing" or "MultiLineString"):
+            ## LINES
+            # p.multi_line("xs", "ys", source=geosource,
+            #             line_color=color,
+            #             line_width= 3,
+            #             legend_label= name)
+            lines = p.multi_line("xs", "ys", source=geosource, line_color=color, line_width=3, legend_label=name)
+            picker = ColorPicker(title=f"{name} Line Color", color=color)
+            picker.js_link("color", lines.glyph, "line_color")
+            pickers.append(picker)
+
+            spinner = Spinner(title=f"{name} size", low=1, high=20, step=0.5, value=3, width=80)
+            spinner.js_link("value", lines.glyph, "line_width")
+
+            spinners.append(spinner)
+            # p.add_tools(HoverTool(
+            #     renderers = [lines],
+            #     tooltips = [("Highway", "@highway"),
+            #                 ("Name", "@name")]
+            # ))
+        elif geom_layer.iloc[:, -1][index].geom_type == ("Polygon" or "MultiPolygon" or "GeometryCollection"):
+            # POLYGONS
+            # p.patches('xs','ys', source = geosource,
+            #             fill_color = color,
+            #             line_color = "black",
+            #             line_width = 0.25,
+            #             fill_alpha = 1,
+            #             legend_label= name)
+            polygons = p.patches(
+                "xs",
+                "ys",
+                source=geosource,
+                fill_color=color,
+                line_color="black",
+                line_width=0.25,
+                fill_alpha=1,
+                legend_label=name,
+            )
+            # p.add_tools(HoverTool(
+            #     renderers = [polygons],
+            #     tooltips = [("Name", name)]
+            # ))
+            picker = ColorPicker(title=f"{name} Polygon Color", color=color)
+            picker.js_link("color", polygons.glyph, "fill_color")
+            pickers.append(picker)
+        else:
+            logger_f.info(f"{name} layer geometrytype not found. Could not display layer")
+
+    # BASEMAP
+    providers = get_cx_providers()
+
+    # add basemap and labels
+    private_provider = TileProvider(providers[provider])
+    tile_provider = get_provider(private_provider)
+    p.add_tile(tile_provider)
+
+    # add labels if baselayer is Stamen
+    # TODO could be more flexible to other providers
+    if provider.split(".")[0] == "Stamen":
+        labels = "Stamen.TonerLabels"
+        private_provider = TileProvider(providers[labels])
+        tile_provider = get_provider(private_provider)
+        p.add_tile(tile_provider, level="overlay")  # overlay -> put the labels on top of everything else
+
+    p.title.text = title
+    p.title.align = "center"
+    p.title.text_font_size = "40px"
+
+    # adjust legend position and functions
+    p.legend.location = "bottom_right"
+    p.legend.click_policy = "hide"  # de-/activates layer
+    p.legend.orientation = "vertical"
+
+    if save_plot:
+        save_to = DATA_PATH / f"bokeh_{title}.html"
+        save(p, save_to)
+
+    # if multiple plots are required, skip adding additional functionality to plot
+    if not add_func:
+        return p
+
+    # below would work with my own bokeh server -> surpasses this course unfortunately
+    # add_select()
+
+    p_stats = create_statistics(map_layer=map_layer)
+    stats_col = column(p_stats)
+    spinners_row = brow(spinners)
+    pickers_col = column(pickers)
+
+    col = column([pickers_col, spinners_row, stats_col])
+
+    # # create layout
+    grid_layout = grid([p, col], ncols=2, sizing_mode="fixed")
+
+    # different way to create layout
+    # l1 = grid([stats_col, pickers_col, spinners_row], sizing_mode="fixed")
+    # grid_layout = grid([p, l1], ncols=2, sizing_mode="fixed")
+
+    end_time = datetime.now() - start_time
+    logger_f.info(f"mapping of {title} finished, Time elapsed: {end_time}")
+    return grid_layout
+
+
+def map_multiple(reverse_map, plot_package, crs_epsg, basemap, title, save_plot):
+    """Create grid with four bokeh figures with random baselayer.
+
+    Args:
+        reverse_map (DataFrame): DataFrame. First columns are layer parameter with last column as layer GeoDataFrame
+        plot_package (String): which plot package should be used
+        crs_epsg (String): used EPSG
+        basemap (String): Provider of the Contextily / xyzservices provider
+        title (String): Title of the plot
+        save_plot (Boolean): True: Save plot.
+
+
+    Returns:
+        Bokeh Gridplot: 2x2 grid with four plots with randomly different baselayer
+    """
+    logger_f.info("start mapping bokeh gridplot")
+    start_time = datetime.now()
+    providers = get_cx_providers()
+    map_list = []
+    for i in range(4):
+        check = True
+        # randomly choose a provider which does not require an API key (too comples for now)
+        while check:
+            provider = random.choice(list(providers.keys()))
+            check = TileProvider(providers[provider]).requires_token()
+
+        basemap = provider
+
+        title = f"{provider}"
+        add_func = False
+        map_list.append(map_bokeh(reverse_map, plot_package, crs_epsg, basemap, title, save_plot, add_func))
+
+    # create 2x2 grid
+    grid = gridplot(
+        [[map_list[0], map_list[1]], [map_list[2], map_list[3]]], plot_width=600, plot_height=600, toolbar_location="right"
+    )
+
+    end_time = datetime.now() - start_time
+    logger_f.info(f"mapping of {title} finished, Time elapsed: {end_time}")
+    return grid
+
+
+def create_statistics(map_layer):
+    """Return bokeh figure bar plot with number of elements per layer.
+
+    Args:
+        map_layer ([DataFrame]): [DataFrame. First columns are layer parameter with last column as layer GeoDataFrame]
+
+    Returns:
+        [bokeh figure]: [bokeh figure bar plot]
+    """
+    categories = list(map_layer["Name"])
+    values = [len(map_layer["Layers"][i]) for i in range(len(map_layer))]
+
+    color = list(map_layer["Color"])
+
+    source = ColumnDataSource(data=dict(categories=categories, values=values, color=color))
+
+    p = figure(x_range=categories, plot_height=300, title="Number of Elements")
+
+    p.vbar(
+        x="categories", top="values", width=0.9, fill_alpha=0.5, line_alpha=0.5, color="color", line_color="black", source=source
+    )
+    p.xgrid.grid_line_color = None
+
+    p.xaxis.axis_label = "Layer"
+    p.yaxis.axis_label = "Number of elements"
+
+    return p
+
+
+# below would work with my own bokeh server -> surpasses this course unfortunately
+# def add_select():
+#     tile_prov_select = Select(title="Tile Provider", value="NA", options=["OpenStreetMap c", "ESRI"])
+
+#     tiles = {"OpenStreetMap c": WMTSTileSource(url="http://c.tile.openstreetmap.org/{Z}/{X}/{Y}.png 1"),
+#             "ESRI": WMTSTileSource(url="https://server.arcgisonline.com/ArcGIS/
+#                                   rest/services/World_Imagery/MapServer/tile/{Z}/{Y}/{X}.jpg")}
+#     #callback
+#     def change_tiles_callback(attr, old, new):
+#         #removing the renderer corresponding to the tile layer
+#         p.renderers = [x for x in p.renderers if not str(x).startswith('TileRenderer')]
+#         #inserting the new tile renderer
+#         tile_renderer = renderers.TileRenderer(tile_source=tiles[new])
+#         p.renderers.insert(0, tile_renderer)
+
+#     # #Assign callback to select menu
+#     tile_prov_select.on_change("value", change_tiles_callback)
