@@ -1,4 +1,4 @@
-from definitions import DATA_PATH, INPUT_PATH, INPUT_PATH_BOKEH, INPUT_PATH_DOWNLOAD, INPUT_PATH_GPD, logger_m
+from definitions import DATA_PATH, INPUT_PATH, INPUT_PATH_BOKEH, INPUT_PATH_DOWNLOAD, INPUT_PATH_GPD, logger_m, logger_f
 from mapping import change_crs, get_cx_providers, map_bokeh, map_gpd, map_multiple
 from ohsome_api import download_osm
 import input_output
@@ -121,12 +121,12 @@ def add_options(options):
 
 
 @click.group()
-@click.option("--verbose", "-v", is_flag=False, help="Will print verbose messages.")
+@click.option("--verbose", "-v", is_flag=True, help="Will print verbose messages.")
 def cli(verbose: bool) -> None:
     """Activate verbose mode."""
-    if verbose:
-        click.echo("We are in the verbose mode. Which does not make any" "difference right now.. but hey, have fun!")
-        # TODO change logger_m from warning to info level
+    if not verbose:
+        del logger_f.handlers[0]
+        del logger_m.handlers[0]
 
 
 @cli.command()
