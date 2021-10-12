@@ -1,5 +1,5 @@
 """Handles Ohsome API OSM data extraction."""
-from definitions import logger
+from definitions import logger_f
 from ohsome import OhsomeClient
 from datetime import datetime
 import sys
@@ -15,17 +15,21 @@ def download_osm(name, filter, time, bpolys, properties):
         bpolys ([gepandas dataframe]): [area of interest]
         properties ([string]): [what kind of property is requested, here: tags]
     """
-    logger.alter_format(name, filter)
-    logger.info("start downloading")
+    logger_f.info("start downloading")
     start_time = datetime.now()
 
     client = OhsomeClient()
     response = client.elements.geometry.post(bpolys=bpolys, filter=filter, time=time, properties=properties)
-    # TODO check if response is empty and if yes, log and skip
+
+    # check if feature list of response if empty if yes log and return None
+    if not response.data["features"]:
+        logger_f.info(f"Given filter: {filter} did not yield any output in the given area")
+        return None
+
     try:
         response_gdf = response.as_dataframe()
     except TypeError as err:
-        logger.error(
+        logger_f.error(
             "Error Type : {}, Error Message : {}".format(
                 type(err).__name__, f"the ohsome request did not work. Check input for correct spelling and logic: {err}"
             )
@@ -33,12 +37,5 @@ def download_osm(name, filter, time, bpolys, properties):
         sys.exit(1)
 
     end_time = datetime.now() - start_time
-    logger.info(f"download finished, Time elapsed: {end_time}")
+    logger_f.info(f"download finished, Time elapsed: {end_time}")
     return response_gdf
-
-
-if __name__ == "__main__":
-    pass
-
-    # TODO
-    # ohsome logs are not saved in the right place -> https://docs.ohsome.org/ohsome-api/stable/response-parameters.html

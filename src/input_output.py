@@ -4,6 +4,7 @@ import pandas as pd
 import geopandas as gpd
 import fiona
 import json
+from definitions import logger_f
 
 ##################### INPUT ######################
 
@@ -33,15 +34,15 @@ def read_file(fpath, driver):
             with open(fpath, "r") as f:
                 data = f.read()
         else:
-            print(f"read method '{driver}' not found")
+            logger_f.error(f"read method '{driver}' not found")
             data = None
     except FileNotFoundError as err:
-        print(f"{fpath} could not be found ", err)
+        logger_f.error(f"{fpath} could not be found ", err)
         sys.exit(1)
     except OSError as err:
-        print("system-related error: ", err)
+        logger_f.error("system-related error: ", err)
     except Exception as err:
-        print("something unexpected happened: ", err)
+        logger_f.error("could not open file", err)
         sys.exit(1)
     return data
 
@@ -66,12 +67,6 @@ def get_params(input_file):
     return df
 
 
-# def findfile(directory, filename):
-#     return glob.glob(f"{directory}/{filename}*")
-
-################## OUTPUT ##########################
-
-
 def save_osm(path, driver, file):
     """Save given file under given path with given driver.
 
@@ -89,14 +84,14 @@ def save_osm(path, driver, file):
         elif driver == "gpkg":
             file.to_file(path, driver=driver.upper())
         else:
-            print(f"file method ({driver}) not found")
+            logger_f.error(f"file method ({driver}) not found")
     except FileNotFoundError as err:
-        print(f"{path} could not be found ", err)
+        logger_f.error(f"{path} could not be found ", err)
         sys.exit(1)
     except OSError as err:
-        print("system-related error: ", err)
+        logger_f.error("system-related error: ", err)
     except Exception as err:
-        print("something unexpected happened: ", err)
+        logger_f.error("something unexpected happened: ", err)
         sys.exit(1)
 
 
