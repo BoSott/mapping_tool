@@ -1,89 +1,90 @@
-# gives definitions about static path variables and encompasses logger settings
-import logging.config
-import types
+# Gives definitions about static path variables and encompasses logger settings.
+import logging
+from logging import config
 from pathlib import Path
-
-# code from: https://gitlab.gistools.geog.uni-heidelberg.de/giscience/disaster-tools
-# /health_access/isochrone_access/-/blob/master/src/definitions.py
 
 ROOT_DIR = Path.cwd()
 
 CONFIG_DIR = ROOT_DIR / "config"
 
-DATA_PATH = ROOT_DIR / "data"
-
 LOGGING_CONFIG_PATH = CONFIG_DIR / "logging.cfg"
 
-LOG_PATH = ROOT_DIR / "logs"
+LOG_DIR = ROOT_DIR / "logs"
 
-INPUT_PATH_DOWNLOAD = DATA_PATH / "input_download.txt"
-INPUT_PATH_PLOTLY = DATA_PATH / "input_plotly.txt"
+LOGGING_ALL = LOG_DIR / "all_messages.log"
+LOGGING_WARNINGS = LOG_DIR / "warning_n_above.log"
+
+DATA_PATH = ROOT_DIR / "data"
+
+INPUT_PATH = ROOT_DIR / "input"
+
+INPUT_PATH_DOWNLOAD = INPUT_PATH / "input_download.txt"
+INPUT_PATH_GPD = INPUT_PATH / "input_gpd.txt"
+INPUT_PATH_BOKEH = INPUT_PATH / "input_bokeh.txt"
 
 if not DATA_PATH.exists():
     DATA_PATH.mkdir()
 
-if not LOG_PATH.exists():
-    LOG_PATH.mkdir()
+if not LOG_DIR.exists():
+    LOG_DIR.mkdir()
 
-LOGGING_FILE_PATH = LOG_PATH / "mapperlogger.log"
-LOGGING_CONFIG = {
+log_config = {
     "version": 1,
     "disable_existing_loggers": True,
-    "formatters": {
-        "standard": {"format": "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"},
-        "error": {"format": "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"},
-    },  # noqa E501
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "main": {"handlers": ["console_main"], "level": "INFO", "propagate": False},
+        "function": {"handlers": ["console_function", "file_all", "file_warnings"], "level": "DEBUG", "propagate": False},
+    },
     "handlers": {
-        "console": {
+        "console": {"formatter": "std_out", "class": "logging.StreamHandler", "level": "DEBUG"},
+        "console_main": {"formatter": "std_out_main", "class": "logging.StreamHandler", "level": "INFO"},
+        "console_function": {"formatter": "std_out_function", "class": "logging.StreamHandler", "level": "DEBUG"},
+        "file_all": {
+            "formatter": "std_out_function",
+            "class": "logging.handlers.RotatingFileHandler",  # when file size is reached, begin on top
             "level": "INFO",
-            "class": "logging.StreamHandler",
-            "formatter": "standard",
+            "mode": "a",  # append
+            "maxBytes": 1e7,  # 10 MB
+            "filename": LOGGING_ALL,
         },
-        "file": {
-            "level": "INFO",
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "standard",
-            "filename": LOGGING_FILE_PATH,
-            "mode": "a",
-            "maxBytes": 1e7,
+        "file_warnings": {
+            "formatter": "std_out_function",
+            "class": "logging.handlers.RotatingFileHandler",  # when file size is reached, begin on top
+            "level": "WARNING",
+            "mode": "a",  # append
+            "maxBytes": 1e7,  # 10 MB
+            "filename": LOGGING_WARNINGS,
         },
     },
-    "loggers": {
-        "root": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "mapper": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": False,
+    "formatters": {
+        "std_out": {
+            "format": "%(asctime)s : %(levelname)s : %(name)s : %(funcName)s : %(lineno)d : %(message)s",
+            "datefmt": "%Y-%m-%d %I:%M:%S",
+        },
+        "std_out_main": {
+            "format": "%(asctime)s : %(levelname)s : %(name)s : %(funcName)s : %(message)s",
+            "datefmt": "%Y-%m-%d %I:%M:%S",
+        },
+        "std_out_function": {
+            "format": "%(levelname)s : File:%(module)s : Func:%(funcName)s : %(lineno)d : LOG : %(message)s",  # %(asctime)s :
+            "datefmt": "%Y-%m-%d %I:%M:%S",
         },
     },
 }
-logging.config.dictConfig(LOGGING_CONFIG)
 
-# logger = logging.getLogger(__name__)
+config.dictConfig(log_config)
+################ Logger #################
+logger_m = logging.getLogger("main")
+logger_f = logging.getLogger("function")
+
+logging.config.dictConfig(log_config)
 
 logger = logging.getLogger("mapper")
-# logging.getLogger("shapely").setLevel(logging.WARNING)
-# logging.getLogger("oauth2client.crypt").setLevel(logging.WARNING)
-# logging.getLogger("fiona.env").setLevel(logging.WARNING)
-# logging.getLogger("fiona._env").setLevel(logging.WARNING)
-# logging.getLogger("Fiona").setLevel(logging.WARNING)
-# logging.getLogger("fiona.ogrext").setLevel(logging.WARNING)
-# logging.getLogger("fiona.collection").setLevel(logging.WARNING)
-
-
-def alter_logger_format(self, name: str, filter: str):
-    """Take an logger object and change the format, for better details."""
-    formatter = logging.Formatter(f"%(asctime)s - %(levelname)s - %(funcName)s - {name} - {filter} - %(message)s")  # noqa E501
-    for item in self.handlers:
-        item.setFormatter(formatter)
-
-
-def reset_logger_format(self):
-    """Reset logger format to standard scheme."""
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(funcName)s - %(message)s")  # noqa E501
-    for item in self.handlers:
-        item.setFormatter(formatter)
-
-
-logger.alter_format = types.MethodType(alter_logger_format, logger)  # type: ignore[attr-defined]
-logger.reset_format = types.MethodType(reset_logger_format, logger)  # type: ignore[attr-defined]
+logging.getLogger("shapely").setLevel(logging.WARNING)
+logging.getLogger("oauth2client.crypt").setLevel(logging.WARNING)
+logging.getLogger("fiona.env").setLevel(logging.WARNING)
+logging.getLogger("fiona._env").setLevel(logging.WARNING)
+logging.getLogger("Fiona").setLevel(logging.WARNING)
+logging.getLogger("fiona.ogrext").setLevel(logging.WARNING)
+logging.getLogger("fiona.collection").setLevel(logging.WARNING)
