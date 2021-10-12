@@ -37,10 +37,6 @@ if __name__=="__main__":
     pass
 
 
-
-
-
-
 ##################### ohsome API
 def helper1():
     testpolstr = Path("C:/Users/Bosse/Documents/Uni/2_semester/Advanced_Geo/mapping/mapping_tool/data/testpolygon.geojson")
@@ -67,3 +63,18 @@ if __name__=="__main__":
     
     # download_osm(name=name1, filter=tagfilter1, time=time1, bpolys=testpol1, properties=properties1)
     download_osm(name=name2, filter=tagfilter2, time=time2, bpolys=testpol2, properties=properties2)
+
+# test if empty answer is catched
+if __name__ == "__main__":
+    name1, testpol1, tagfilter1, time1, properties1 = helper1()
+    # name2, testpol2, tagfilter2, time2, properties2 = helper2()
+    
+    test = download_osm(name=name1, filter=tagfilter1, time=time1, bpolys=testpol1, properties=properties1)
+    # download_osm(name=name2, filter=tagfilter2, time=time2, bpolys=testpol2, properties=properties2)
+    if test is None:
+        logger.warning("did not work")
+
+    # TODO
+    # ohsome logs are not saved in the right place -> https://docs.ohsome.org/ohsome-api/stable/response-parameters.html
+
+assert id(logging.getLogger("toto")) == id(logging.getLogger("toto"))
