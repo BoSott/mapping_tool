@@ -179,3 +179,9 @@ change txt input to json
 improve logging: -> errors are not logged well
 1. https://coderzcolumn.com/tutorials/python/logging-config-simple-guide-to-configure-loggers-from-dictionary-and-config-files-in-python
 2. https://coderzcolumn.com/tutorials/python/logging-simple-guide-to-log-events-in-python
+
+
+# further
+add hover tool with complete list of keys and values if value not None (?)
+when changing color -> statistics do not change
+can one change the tool so that the plot is the self of a class?
