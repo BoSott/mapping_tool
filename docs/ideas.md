@@ -156,6 +156,9 @@ maybe more:
 setting up the environment
 packages which ones and why
 
+Generally: not very robust, difficulties towrite tests for the plotting functions -> too complex, output hard to verify or to falsify
+-> depends very strongly on the correct input -> false input is not corrected and often not checked -> e.g. input polygon -> exists, name is correct but no geometry check
+
 
 geopandas vs plotly: https://www.reaktor.com/blog/creating-an-interactive-geoplotting-demo-experiences-with-geopandas-and-plotly/
 
