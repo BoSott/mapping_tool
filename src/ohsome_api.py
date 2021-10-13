@@ -5,11 +5,10 @@ from datetime import datetime
 import sys
 
 
-def download_osm(name, filter, time, bpolys, properties):
+def download_osm(filter, time, bpolys, properties):
     """Download osm data via the ohsome extraction API.
 
     Args:
-        name ([string]): [name of the layer]
         filter ([string]): [query for the ohsome api]
         time ([string]): [time parameter]
         bpolys ([gepandas dataframe]): [area of interest]
