@@ -1,19 +1,12 @@
 from definitions import DATA_PATH, INPUT_PATH, INPUT_PATH_BOKEH, INPUT_PATH_DOWNLOAD, INPUT_PATH_GPD, logger_m, logger_f
 from mapping import change_crs, get_cx_providers, map_bokeh, map_gpd, map_multiple
 from ohsome_api import download_osm
-import input_output
+import inputOutput
 import click
 from pathlib import Path
 import sys
 from bokeh.io import show
-
-
-## create tool structure -> possibly with clicks
-driver = "gpkg"
-properties = "tags"
-map_input = INPUT_PATH_GPD
-crs_epsg = 3857
-
+import test
 
 _driver_option = [
     click.option(
@@ -22,16 +15,6 @@ _driver_option = [
         default="GeoJSON",
         type=str,
         help="Specify the type in which the OSM layers should be saved. gpkg or Default: GeoJSON",
-    )
-]
-
-_properties_option = [
-    click.option(
-        "--properties",
-        "-prop",
-        default="tags",
-        type=str,
-        help="Specifies the kind of property that the ohsome API is filtered for. Just leave it as it is. Default: tags",
     )
 ]
 
@@ -131,21 +114,26 @@ def cli(verbose: bool) -> None:
 
 @cli.command()
 @add_options(_driver_option)
-@add_options(_properties_option)
 @add_options(_overwrite_option)
-def run_download(driver: str, properties: str, overwrite: bool) -> None:
+def run_download(driver: str, overwrite: bool) -> None:
     """Executes command to download and save OSM layer."""
-    in_file = input_output.read_file(fpath=INPUT_PATH_DOWNLOAD, driver="txt")
-    in_params = input_output.get_params(input_file=in_file)
+    in_file = inputOutput.read_file(fpath=INPUT_PATH_DOWNLOAD, driver="json")
+    in_params = inputOutput.get_params(input_file=in_file)
+
+    if inputOutput.check_download_input(in_params):
+        logger_f.info("Given user download input is correct (time parameter not checked)")
+    else:
+        logger_f.warning("Download input is not correct. End Program.")
+        sys.exit()
 
     # download each layer with the given parameters and save each to the data folder
     for index, row in in_params.iterrows():  # start of the download changed
         name = row[0]
         filter = row[1]
-        f = lambda x: None if x == "None" else x  # converts string "None" to None
-        time = f(row[2])
+        f_none = lambda x: None if x == "None" else x  # converts string "None" to None
+        time = f_none(row[2])
         bpolys_path = INPUT_PATH / row[-1]
-        bpolys = input_output.read_file(bpolys_path, driver="gpd")
+        bpolys = inputOutput.read_file(bpolys_path, driver="gpd")
 
         # check if data already exists and only download and overwrite if wanted
         layer_path = DATA_PATH / f"{name}.{driver}"
@@ -153,7 +141,7 @@ def run_download(driver: str, properties: str, overwrite: bool) -> None:
             logger_m.info(f"file {name}.{driver} is already downloaded")
             continue
 
-        layer = download_osm(name=name, filter=filter, time=time, bpolys=bpolys, properties=properties)
+        layer = download_osm(filter=filter, time=time, bpolys=bpolys)
 
         # if no features could be found, continue with the next layer
         if layer is None:
@@ -164,29 +152,46 @@ def run_download(driver: str, properties: str, overwrite: bool) -> None:
             continue
 
         save_path = DATA_PATH / f"{name}.{driver}"
-        input_output.save_osm(save_path, driver=driver, file=layer)
+        inputOutput.save_osm(save_path, driver=driver, file=layer)
 
 
 @cli.command()
 @add_options(_plot_package_option)
+@add_options(_driver_option)
 @add_options(_crs_epsg_option)
 @add_options(_title_option)
 @add_options(_save_plot_option)
 @add_options(_basemap_option)
 @add_options(_random_baserlayer_option)
-def run_plotting(plot_package: str, crs_epsg: int, title: str, save_plot: bool, basemap: str, random_baselayer: str) -> None:
+def run_plotting(
+    plot_package: str, driver: str, crs_epsg: int, title: str, save_plot: bool, basemap: str, random_baselayer: bool
+) -> None:
     """Execute command to plot the given layer based on input files."""
     # choose plot parameter file location based on plot_package
-    input_dict = {"gpd": INPUT_PATH_GPD, "bokeh": INPUT_PATH_BOKEH}
-    map_input = input_dict[plot_package]
+    input_dict_download = {"gpd": INPUT_PATH_GPD, "bokeh": INPUT_PATH_BOKEH}
+    map_input = input_dict_download[plot_package]
 
-    # get the map style parameters
-    in_file_gpd = input_output.read_file(fpath=map_input, driver="txt")
-    in_params_gpd = input_output.get_params(input_file=in_file_gpd)
+    # get the plotting style parameters
+    input_file_plot = inputOutput.read_file(fpath=map_input, driver="json")
+    in_params_plot = test.get_params(input_file=input_file_plot)
+
+    # check user plotting input
+    if inputOutput.check_plotting_input(in_params_plot):
+        logger_f.info("Given user plotting input is correct")
+    else:
+        logger_f.warning("Plotting input is not correct. End Program.")
+        sys.exit()
 
     # get general layer information about layer -> load input parameters as dataframe
-    in_file = input_output.read_file(fpath=INPUT_PATH_DOWNLOAD, driver="txt")
-    in_params = input_output.get_params(input_file=in_file)
+    in_file = inputOutput.read_file(fpath=INPUT_PATH_DOWNLOAD, driver="json")
+    in_params = test.get_params(input_file=in_file)
+
+    # check user layer information (download) input
+    if inputOutput.check_download_input(in_params):
+        logger_f.info("Given user download input is correct (time parameter not checked)")
+    else:
+        logger_f.warning("Download input is not correct. End Program.")
+        sys.exit()
 
     # get the map layer and create list of layers
     layers = []
@@ -199,12 +204,12 @@ def run_plotting(plot_package: str, crs_epsg: int, title: str, save_plot: bool, 
             logger_m.warning(f"file {name}.{driver} does not exist. Continue with the next.")
             continue
 
-        layer = input_output.read_file(fpath=layer_path, driver="gpd")
+        layer = inputOutput.read_file(fpath=layer_path, driver="gpd")
         layers.append(layer)
 
     # combine osm layers with the gpd input params
     # no need to handle empty files, they will not be saved in the first place (see run_download: 178f)
-    map_layer = in_params_gpd.assign(Layers=layers)
+    map_layer = in_params_plot.assign(Layers=layers)
 
     # change crs of layers
     map_layer = change_crs(map_layer, crs_epsg)
@@ -222,14 +227,14 @@ def run_plotting(plot_package: str, crs_epsg: int, title: str, save_plot: bool, 
             basemap = "Stamen.TonerLite"
             logger_m.warning("Given baselayer name does not exist. Changed to default.")
 
-        map_gpd(reverse_map, plot_package, crs_epsg, basemap, title, save_plot)
+        map_gpd(reverse_map, crs_epsg, basemap, title, save_plot)
 
     elif plot_package == "bokeh":
         if not random_baselayer:
-            p = map_bokeh(reverse_map, plot_package, crs_epsg, basemap, title, save_plot)
+            p = map_bokeh(reverse_map, basemap, title, save_plot)
             show(p)
         else:
-            grid = map_multiple(reverse_map, plot_package, crs_epsg, basemap, title, save_plot)
+            grid = map_multiple(reverse_map, basemap, title, save_plot)
             show(grid)
     else:
         logger_m.warning(f"plot package {plot_package} not implemented. Abort plotting.")
@@ -238,7 +243,6 @@ def run_plotting(plot_package: str, crs_epsg: int, title: str, save_plot: bool, 
 
 @cli.command()
 @add_options(_driver_option)
-@add_options(_properties_option)
 @add_options(_crs_epsg_option)
 @add_options(_plot_package_option)
 @add_options(_title_option)
@@ -249,17 +253,15 @@ def run_plotting(plot_package: str, crs_epsg: int, title: str, save_plot: bool, 
 def run(
     ctx,
     driver: str,
-    properties: str,
     crs_epsg: int,
     plot_package: str,
-    input_polygon: str,
     title: str,
     save_plot: bool,
     overwrite: bool,
     random_baselayer: str,
 ) -> None:
     """Execute command to download and plot."""
-    ctx.invoke(run_download, driver=driver, properties=properties, overwrite=overwrite)
+    ctx.invoke(run_download, driver=driver, overwrite=overwrite)
 
     ctx.invoke(
         run_plotting,
@@ -274,39 +276,11 @@ def run(
 if __name__ == "__main__":
     logger_m.info("start main process")
     # main(download=False)
-    # run_download(driver="gpkg", properties="tags", input_polygon="input_polygon.geojson", overwrite=False)
+    # run_download(driver="gpkg", input_polygon="input_polygon.geojson", overwrite=False)
     # run_download(["-d", "gpkg"], ["-prop", "tags"], ["-pol", "input_polygon.geojson"], ["-o", False])
     # run_download()
     # run_plotting(["-pp", "gpd"], ["-ce", 3857], ["-t", "Map with OSM layers"], ["-sp", False])
     # run_plotting(["-pp", "gpd"])
-    run_plotting(["-pp", "gpd"])
-
-
-## TODO
-# DONE fuse the main into the clicks stuff and add the stuff that is in the comments there -> download stuff
-# DONE add bokeh plot
-
-
-########## IMPORTANT #############
-# edit logger_m
-# clean up code and push commit everything
-# write tests
-# create first report structure
-# write stuff down -> should be okay by then I guess...
-
-# maybe add statistics to bokeh with slider
-# http://docs.bokeh.org/en/1.3.2/docs/user_guide/layout.html play around with Widgets in Bokeh
-# -> can one adjust the figure through that?
-# widget slider maybe for statistics https://docs.bokeh.org/en/latest/docs/user_guide/layout.html
-# color picker changes the CRS ????
-# hover tool -> keys and values?
-
-
-########## maybe ###########
-# add somnx plot - just because I want such a map :D
-# change input to json
-
-
-# super unimportant stuff
-# when changing color -> statics do not change
-# can one change the tool so that the plot is the self of a class?
+    # run_plotting(["-pp", "bokeh"])
+    # run(["-pp", "bokeh"])
+    run()
