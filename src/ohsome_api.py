@@ -5,20 +5,19 @@ from datetime import datetime
 import sys
 
 
-def download_osm(filter, time, bpolys, properties):
+def download_osm(filter, time, bpolys):
     """Download osm data via the ohsome extraction API.
 
     Args:
         filter ([string]): [query for the ohsome api]
         time ([string]): [time parameter]
         bpolys ([gepandas dataframe]): [area of interest]
-        properties ([string]): [what kind of property is requested, here: tags]
     """
     logger_f.info("start downloading")
     start_time = datetime.now()
 
     client = OhsomeClient()
-    response = client.elements.geometry.post(bpolys=bpolys, filter=filter, time=time, properties=properties)
+    response = client.elements.geometry.post(bpolys=bpolys, filter=filter, time=time)
 
     # check if feature list of response if empty if yes log and return None
     if not response.data["features"]:
