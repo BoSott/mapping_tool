@@ -18,9 +18,9 @@ DATA_PATH = ROOT_DIR / "data"
 
 INPUT_PATH = ROOT_DIR / "input"
 
-INPUT_PATH_DOWNLOAD = INPUT_PATH / "input_download.txt"
-INPUT_PATH_GPD = INPUT_PATH / "input_gpd.txt"
-INPUT_PATH_BOKEH = INPUT_PATH / "input_bokeh.txt"
+INPUT_PATH_DOWNLOAD = INPUT_PATH / "input_download.json"
+INPUT_PATH_GPD = INPUT_PATH / "input_gpd.json"
+INPUT_PATH_BOKEH = INPUT_PATH / "input_bokeh.json"
 
 if not DATA_PATH.exists():
     DATA_PATH.mkdir()
