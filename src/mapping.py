@@ -18,6 +18,7 @@ from bokeh.plotting import figure, save
 from bokeh.tile_providers import get_provider
 from xyzservices import TileProvider
 import random
+import sys
 
 
 def change_crs(map_layer, crs_epsg):
@@ -110,11 +111,17 @@ def map_gpd(map_layer, crs_epsg, provider, title, save_plot):
 
     providers = get_cx_providers()
 
-    cx.add_basemap(ax, source=providers[provider], crs=f"EPSG:{crs_epsg}")
-
-    # optional to bring the labels upfront
-    # if time, make it adjustable as well
-    cx.add_basemap(ax, source=cx.providers.Stamen.TonerLabels, crs=f"EPSG:{crs_epsg}", zorder=1000)
+    try:
+        cx.add_basemap(ax, source=providers[provider], crs=f"EPSG:{crs_epsg}")
+        # bring the labels upfront if provider Stamen
+        if "Stamen" in provider:
+            cx.add_basemap(ax, source=cx.providers.Stamen.TonerLabels, crs=f"EPSG:{crs_epsg}", zorder=1000)
+    except TimeoutError as err:
+        logger_f.error("Connection to basemap provider could not be established. Check internet connection. Err:", err)
+        sys.exit()
+    except Exception as err:
+        logger_f.error("Could not load baseap. Check connections:. Error:", err)
+        sys.exit()
 
     # add legend and define position
     ax.legend(title=title, handles=legend_elements, frameon=False)

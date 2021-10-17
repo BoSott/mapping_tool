@@ -160,6 +160,15 @@ Generally: not very robust, difficulties towrite tests for the plotting function
 -> depends very strongly on the correct input -> false input is not corrected and often not checked -> e.g. input polygon -> exists, name is correct but no geometry check
 
 
+
+finally:
+create environment.yml for conda and requirements.txt for pip
+first: TODO check which packeges are not required anymore ------> https://anaconda.org/jamespreed/conda-minify could solve the issue
+conda env export > environment.yml --no-builds
+pip list --format=freeze > requirements.txt
+
+
+
 geopandas vs plotly: https://www.reaktor.com/blog/creating-an-interactive-geoplotting-demo-experiences-with-geopandas-and-plotly/
 
 
@@ -185,3 +194,9 @@ improve logging: -> errors are not logged well
 add hover tool with complete list of keys and values if value not None (?)
 when changing color -> statistics do not change
 can one change the tool so that the plot is the self of a class?
+
+
+TODO:
+- write RREADME
+- push chages to github
+- write first structure of the report

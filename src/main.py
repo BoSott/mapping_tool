@@ -6,7 +6,6 @@ import click
 from pathlib import Path
 import sys
 from bokeh.io import show
-import test
 
 _driver_option = [
     click.option(
@@ -173,7 +172,7 @@ def run_plotting(
 
     # get the plotting style parameters
     input_file_plot = inputOutput.read_file(fpath=map_input, driver="json")
-    in_params_plot = test.get_params(input_file=input_file_plot)
+    in_params_plot = inputOutput.get_params(input_file=input_file_plot)
 
     # check user plotting input
     if inputOutput.check_plotting_input(in_params_plot):
@@ -184,7 +183,7 @@ def run_plotting(
 
     # get general layer information about layer -> load input parameters as dataframe
     in_file = inputOutput.read_file(fpath=INPUT_PATH_DOWNLOAD, driver="json")
-    in_params = test.get_params(input_file=in_file)
+    in_params = inputOutput.get_params(input_file=in_file)
 
     # check user layer information (download) input
     if inputOutput.check_download_input(in_params):
@@ -274,13 +273,13 @@ def run(
 
 
 if __name__ == "__main__":
-    logger_m.info("start main process")
+    logger_m.info("start main proc<ess")
     # main(download=False)
     # run_download(driver="gpkg", input_polygon="input_polygon.geojson", overwrite=False)
     # run_download(["-d", "gpkg"], ["-prop", "tags"], ["-pol", "input_polygon.geojson"], ["-o", False])
     # run_download()
     # run_plotting(["-pp", "gpd"], ["-ce", 3857], ["-t", "Map with OSM layers"], ["-sp", False])
-    # run_plotting(["-pp", "gpd"])
+    run_plotting(["-pp", "gpd"])
     # run_plotting(["-pp", "bokeh"])
     # run(["-pp", "bokeh"])
-    run()
+    # run()
