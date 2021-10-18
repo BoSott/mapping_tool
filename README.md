@@ -1,14 +1,16 @@
 # OSM Mapping Tool
 
-This commandline mapping tool provides functionality to download and display OSM data via Pyplot (static) or Bokeh (interactive). Running this tool thus yields a map of the given search area and specified OSM tag filters. The result will pop up (plotly) or will be displayed in the standard browser of your system. It can be saved automatically or via the GUI.
+This commandline mapping tool provides functionality to download and display OSM data via Geopandas Pyplot (static) or Bokeh (interactive). Running this tool thus yields a map of the given search area and specified OSM tag filters. The result will pop up (plotly) or will be displayed in the standard browser of your system. It can be saved automatically or via the GUI.
 
 
 Example Plots with gpd and bokeh and the given input example parameters.
 
 # ADD MAPS OF BOTH PROVIDERS
+Bokeh example:
+![bokeh example](https://github.com/BoSott/mapping_tool/blob/main/data/example_output/example_map_bokeh.png)
 
-![bokeh example](data\example_output\example_map_bokeh.png)
-![plotly example](data\example_output\example_map_plotly.png)
+Gepandas Plotly example:
+![plotly example](https://github.com/BoSott/mapping_tool/blob/main/data/example_output/example_map_plotly.png)
 
 ## Setting up:
 - installed version of Python 3.9
@@ -157,6 +159,6 @@ Options:
 
 or
 
-`mapping_tool run-plotting --plot_package gpd --save_plot True --basemap Stamen.TonerLite --title StamenTonerLiteHeidelberg`
+`mapping_tool run-plot --plot_package gpd --save_plot True --basemap Stamen.TonerLite --title StamenTonerLiteHeidelberg`
 
 Both these commands will execute plotting and save a PNG to the ./data/output folder. The *bokeh* example will also save an interactive .html with the same name to the same location.
