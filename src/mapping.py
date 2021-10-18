@@ -1,5 +1,5 @@
 from bokeh.models.widgets.inputs import ColorPicker, Spinner
-from definitions import DATA_PATH, logger_f
+from definitions import OUTPUT_PATH, logger_f
 import pandas as pd
 from datetime import datetime
 import contextily as cx
@@ -14,7 +14,7 @@ from bokeh.models import (
 )
 from bokeh.layouts import column, gridplot, grid
 from bokeh.layouts import row as brow
-from bokeh.plotting import figure, save
+from bokeh.plotting import figure
 from bokeh.tile_providers import get_provider
 from xyzservices import TileProvider
 import random
@@ -124,7 +124,7 @@ def map_gpd(map_layer, crs_epsg, provider, title, save_plot):
         sys.exit()
 
     # add legend and define position
-    ax.legend(title=title, handles=legend_elements, frameon=False)
+    ax.legend(handles=legend_elements, frameon=False)
     leg = ax.get_legend()  # set legend's position and size
     leg.set_bbox_to_anchor((1.2, 0.3))
 
@@ -136,9 +136,7 @@ def map_gpd(map_layer, crs_epsg, provider, title, save_plot):
     }
 
     # set title
-    ax.set_title(label="Map with OSM layers", fontdict=font, pad=12)  # add title to map
-
-    # fig.suptitle("Map with OSM layers", fontsize=14, fontweight="bold")
+    ax.set_title(label=title, fontdict=font, pad=12)  # add title to map
 
     ax.set_axis_off()  # remove the axis ticks
 
@@ -154,8 +152,10 @@ def map_gpd(map_layer, crs_epsg, provider, title, save_plot):
     plt.tight_layout()  # adjust padding
 
     # save if wanted, default False
+    title_underscore = title.replace(" ", "_")
+    # title_underscore = title
     if save_plot:
-        save_to = DATA_PATH / f"{title}.png"
+        save_to = OUTPUT_PATH / f"{title_underscore}.png"
         plt.savefig(save_to)
 
     end_time = datetime.now() - start_time
@@ -201,14 +201,13 @@ def create_statistics(map_layer):
     return p
 
 
-def map_bokeh(map_layer, provider, title, save_plot, add_func=True):
+def map_bokeh(map_layer, provider, title, add_func=True):
     """Create bokeh plot with given layers and basemap.
 
     Args:
         reverse_map (DataFrame): DataFrame. First columns are layer parameter with last column as layer GeoDataFrame
         basemap (String): Provider of the Contextily / xyzservices provider
         title (String): Title of the plot
-        save_plot (Boolean): True: Save plot.
         add_func(Boolean): add additional functionality widgets to the plot (True) or not (False). Default: True.
 
     Returns:
@@ -219,9 +218,7 @@ def map_bokeh(map_layer, provider, title, save_plot, add_func=True):
 
     # TODO could add some sort of hover tool -> but would need to make the column adjustable
 
-    p = figure(
-        title=title, plot_height=950, plot_width=950, toolbar_location="right", tools="pan, wheel_zoom, box_zoom, reset , save"
-    )
+    p = figure(title=title, height=950, width=950, toolbar_location="right", tools="pan, wheel_zoom, box_zoom, reset , save")
 
     # hide grid
     p.xgrid.grid_line_color = None
@@ -326,11 +323,6 @@ def map_bokeh(map_layer, provider, title, save_plot, add_func=True):
     p.legend.click_policy = "hide"  # de-/activates layer
     p.legend.orientation = "vertical"
 
-    # save plot if wanted
-    if save_plot:
-        save_to = DATA_PATH / f"bokeh_{title}.html"
-        save(p, save_to)
-
     # if multiple plots are required, skip adding additional functionality to plot
     if not add_func:
         return p
@@ -366,14 +358,13 @@ def map_bokeh(map_layer, provider, title, save_plot, add_func=True):
     return grid_layout
 
 
-def map_multiple(reverse_map, basemap, title, save_plot):
+def map_multiple(reverse_map, basemap, title):
     """Create grid with four bokeh figures with random baselayer.
 
     Args:
         reverse_map (DataFrame): DataFrame. First columns are layer parameter with last column as layer GeoDataFrame
         basemap (String): Provider of the Contextily / xyzservices provider
         title (String): Title of the plot
-        save_plot (Boolean): True: Save plot.
 
 
     Returns:
@@ -394,7 +385,7 @@ def map_multiple(reverse_map, basemap, title, save_plot):
 
         title = f"{provider}"
         add_func = False
-        map_list.append(map_bokeh(reverse_map, basemap, title, save_plot, add_func))
+        map_list.append(map_bokeh(reverse_map, basemap, title, add_func))
 
     # create 2x2 grid
     grid = gridplot(

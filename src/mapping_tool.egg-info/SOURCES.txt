@@ -1,0 +1,8 @@
+main.py
+setup.py
+mapping_tool.egg-info/PKG-INFO
+mapping_tool.egg-info/SOURCES.txt
+mapping_tool.egg-info/dependency_links.txt
+mapping_tool.egg-info/entry_points.txt
+mapping_tool.egg-info/requires.txt
+mapping_tool.egg-info/top_level.txt

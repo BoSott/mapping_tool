@@ -16,7 +16,9 @@ LOGGING_WARNINGS = LOG_DIR / "warning_n_above.log"
 
 DATA_PATH = ROOT_DIR / "data"
 
-INPUT_PATH = ROOT_DIR / "input"
+INPUT_PATH = DATA_PATH / "input"
+
+OUTPUT_PATH = DATA_PATH / "output"
 
 INPUT_PATH_DOWNLOAD = INPUT_PATH / "input_download.json"
 INPUT_PATH_GPD = INPUT_PATH / "input_gpd.json"
@@ -67,8 +69,7 @@ log_config = {
             "datefmt": "%Y-%m-%d %I:%M:%S",
         },
         "std_out_function": {
-            "format": "%(levelname)s : File:%(module)s : Func:%(funcName)s : %(lineno)d : LOG : %(message)s",  # %(asctime)s :
-            "datefmt": "%Y-%m-%d %I:%M:%S",
+            "format": "%(asctime)s : %(levelname)s : File:%(module)s : Func:%(funcName)s : %(lineno)d : LOG : %(message)s",
         },
     },
 }

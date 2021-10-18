@@ -1,4 +1,15 @@
-from definitions import DATA_PATH, INPUT_PATH, INPUT_PATH_BOKEH, INPUT_PATH_DOWNLOAD, INPUT_PATH_GPD, logger_m, logger_f
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from definitions import (
+    DATA_PATH,
+    INPUT_PATH,
+    INPUT_PATH_BOKEH,
+    INPUT_PATH_DOWNLOAD,
+    INPUT_PATH_GPD,
+    logger_m,
+    logger_f,
+    OUTPUT_PATH,
+)
 from mapping import change_crs, get_cx_providers, map_bokeh, map_gpd, map_multiple
 from ohsome_api import download_osm
 import inputOutput
@@ -6,6 +17,9 @@ import click
 from pathlib import Path
 import sys
 from bokeh.io import show
+from bokeh.plotting import output_file
+from bokeh.plotting import save
+from bokeh.io import export_png
 
 _driver_option = [
     click.option(
@@ -44,7 +58,9 @@ _title_option = [
 ]
 
 _save_plot_option = [
-    click.option("--save_plot", "-sp", default=False, type=bool, help="Specify whether the plot should be saved or not")
+    click.option(
+        "--save_plot", "-sp", default=True, type=bool, help="Specify whether the plot should be saved or not. Default: True"
+    )
 ]
 
 _overwrite_option = [
@@ -59,7 +75,7 @@ _overwrite_option = [
 
 _basemap_option = [
     click.option(
-        "-basemap",
+        "--basemap",
         "-b",
         default="Stamen.TonerLite",
         type=str,
@@ -205,6 +221,10 @@ def run_plotting(
 
         layer = inputOutput.read_file(fpath=layer_path, driver="gpd")
         layers.append(layer)
+    # exit program if no valid layer is given
+    if not len(layers):
+        logger_m.error("No valid layer given.")
+        sys.exit()
 
     # combine osm layers with the gpd input params
     # no need to handle empty files, they will not be saved in the first place (see run_download: 178f)
@@ -230,11 +250,23 @@ def run_plotting(
 
     elif plot_package == "bokeh":
         if not random_baselayer:
-            p = map_bokeh(reverse_map, basemap, title, save_plot)
-            show(p)
+            p = map_bokeh(reverse_map, basemap, title)
         else:
-            grid = map_multiple(reverse_map, basemap, title, save_plot)
-            show(grid)
+            p = map_multiple(reverse_map, basemap, title)
+            # show(grid)
+
+        # save plot if wanted
+        # title_underscore = title.replace(" ", "_")
+        title_underscore = title
+        save_to = OUTPUT_PATH / f"bokeh_{title_underscore}.html"
+        output_file(title=title_underscore, filename=save_to)
+        if save_plot:
+            # save_to = OUTPUT_PATH / f"bokeh_{title_underscore}.html"
+            save(p)
+            save_to_png = OUTPUT_PATH / f"bokeh_{title_underscore}.png"
+            export_png(obj=p, filename=save_to_png)
+        show(p)
+
     else:
         logger_m.warning(f"plot package {plot_package} not implemented. Abort plotting.")
         sys.exit(1)
@@ -274,12 +306,17 @@ def run(
 
 if __name__ == "__main__":
     logger_m.info("start main proc<ess")
-    # main(download=False)
+
+    # define the click parameters as shown below
+    # giving no parameters will run the application with default parameters
+
     # run_download(driver="gpkg", input_polygon="input_polygon.geojson", overwrite=False)
     # run_download(["-d", "gpkg"], ["-prop", "tags"], ["-pol", "input_polygon.geojson"], ["-o", False])
     # run_download()
     # run_plotting(["-pp", "gpd"], ["-ce", 3857], ["-t", "Map with OSM layers"], ["-sp", False])
-    run_plotting(["-pp", "gpd"])
-    # run_plotting(["-pp", "bokeh"])
-    # run(["-pp", "bokeh"])
+    # run_plotting(["-pp", "gpd"])
+    run_plotting(["-pp", "bokeh"], ["-rb", True])
+
+    # run_plotting(["-pp", "bokeh"], ["-sp", True])
+    # mapping_tool run-plotting --plotting_package bokeh --save_plot True --basemap Stamen.Watercolor
     # run()
