@@ -29,6 +29,7 @@ Example data and file structure is given. Modify content but not file names or s
 - *input_gpd.json*: Specify parameters for plotting with Pyplot. Name and color. Name has to be the name of the input file (the same as in the download parameters)
 
 ## How to run the tool
+The folder to execute this programm has to be the root folder of the repository (mappint_tool)!
 Executing commands without specifying any parameters will use default parameters only.
 
 ```

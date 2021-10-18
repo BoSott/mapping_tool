@@ -9,7 +9,7 @@
         },
         "layer2":{
             "name":"highways",
-            "filter":"ighway=* and type:way",
+            "filter":"highway=* and type:way",
             "time":"None",
             "polygon":"input_polygon.geojson"
         },

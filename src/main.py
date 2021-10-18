@@ -161,7 +161,7 @@ def run_download(driver: str, overwrite: bool) -> None:
         # if no features could be found, continue with the next layer
         if layer is None:
             logger_m.warning(
-                f"requested layer with filter: {filter} did not return any features for the given search ares. \
+                f"requested layer with filter: {filter} did not return any features for the given search areas. \
                 Skip layer {name}."
             )
             continue
