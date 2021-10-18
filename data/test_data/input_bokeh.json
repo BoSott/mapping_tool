@@ -1,0 +1,17 @@
+{
+    "name": "input_bokeh",
+    "layers":{
+        "layer1":{
+            "name": "bicycle_parking",
+            "color": "#417029"
+        },
+        "layer2":{
+            "name": "highways",
+            "color": "grey"
+        },
+        "layer3":{
+            "name": "buildings",
+            "color": "#094884"
+        }
+    }
+}
