@@ -158,6 +158,6 @@ Options:
 
 or
 
-`mapping_tool run-plotting --plot_package gpd --save_plot True --basemap Stamen.TonerLite --title StamenTonerLiteHeidelberg`
+`mapping_tool run-plot --plot_package gpd --save_plot True --basemap Stamen.TonerLite --title StamenTonerLiteHeidelberg`
 
 Both these commands will execute plotting and save a PNG to the ./data/output folder. The *bokeh* example will also save an interactive .html with the same name to the same location.
