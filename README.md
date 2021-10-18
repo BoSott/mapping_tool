@@ -7,8 +7,8 @@ Example Plots with gpd and bokeh and the given input example parameters.
 
 # ADD MAPS OF BOTH PROVIDERS
 
-![bokeh example](data\example_output\example_map_bokeh.png)
-![plotly example](data\example_output\example_map_plotly.png)
+![bokeh example](https://github.com/BoSott/mapping_tool/blob/main/data/example_output/example_map_bokeh.png)
+![plotly example](https://github.com/BoSott/mapping_tool/blob/main/data/example_output/example_map_plotly.png)
 
 ## Setting up:
 - installed version of Python 3.9
