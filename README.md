@@ -6,8 +6,10 @@ This commandline mapping tool provides functionality to download and display OSM
 Example Plots with gpd and bokeh and the given input example parameters.
 
 # ADD MAPS OF BOTH PROVIDERS
-
+Bokeh example:
 ![bokeh example](https://github.com/BoSott/mapping_tool/blob/main/data/example_output/example_map_bokeh.png)
+
+Plotly example:
 ![plotly example](https://github.com/BoSott/mapping_tool/blob/main/data/example_output/example_map_plotly.png)
 
 ## Setting up:
