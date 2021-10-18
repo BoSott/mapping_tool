@@ -1,0 +1,4 @@
+
+        [console_scripts]
+        mapping_tool=main:cli
+

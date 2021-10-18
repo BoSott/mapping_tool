@@ -1,4 +1,0 @@
-Name,Filter,Time,Polygon
-bicycle_parking,amenity=bicycle_parking and geometry:point,None,input_polygon.geojson
-highways,highway=* and type:way,None,input_polygon.geojson
-buildings,building=* and geometry:polygon,None,input_polygon.geojson
