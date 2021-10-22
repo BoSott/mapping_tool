@@ -1,0 +1,15 @@
+# Plotting Packages with Examples
+- GeoViews - PyViz/HoloViz https://geoviews.org/#, [example](https://towardsdatascience.com/interactive-geospatial-data-visualization-with-geoviews-in-python-7d5335c8efd1), [example2](https://towardsdatascience.com/how-to-visualize-data-on-top-of-a-map-in-python-using-the-geoviews-library-c4f444ca2929),
+- Folium, on top of Leaflet.js, [example](https://codeburst.io/how-i-understood-displaying-interactive-maps-using-python-leaflet-js-and-folium-bd9b98c26e0e), [example2](https://python-bloggers.com/2020/12/how-to-make-stunning-interactive-maps-with-python-and-folium-in-minutes/), [example3](https://medium.com/@saidakbarp/interactive-map-visualization-with-folium-in-python-2e95544d8d9b), [example4](https://blog.prototypr.io/interactive-maps-with-python-part-1-aa1563dbe5a9)
+- [mapboxgl](https://github.com/mapbox/mapboxgl-jupyter), [example](https://www.earthdatascience.org/courses/scientists-guide-to-plotting-data-in-python/plot-spatial-data/customize-raster-plots/interactive-maps/)
+- Plotly/Plotly Express, [example](https://python.plainenglish.io/how-to-create-a-interative-map-using-plotly-express-geojson-to-brazil-in-python-fb5527ae38fc), [example2](https://www.jphwang.com/interactive-maps-with-python-pandas-and-plotly/)
+- Altair, [example](https://prog.world/how-to-make-an-interactive-map-using-python-and-open-source-libraries/) (also Plotly and Folium examples)
+- IpyLeaflet
+- KeplerGL for Jupyter [here](https://github.com/keplergl/kepler.gl/blob/master/docs/keplergl-jupyter/README.md) built on top of dek.gl
+- Geopandas + [Contextily](https://github.com/geopandas/contextily) (basemaps) and [IPYMPL](https://github.com/matplotlib/ipympl) for interactive plots
+- [bokeh](https://docs.bokeh.org/en/latest/index.html)
+- Flask, [example](https://developer.here.com/blog/here-map-with-python-flask)
+- Heroku [example](https://medium.com/analytics-vidhya/data-visualization-deploying-an-interactive-map-as-a-web-app-with-heroku-51a323029e4)
+- OSMNX [example](https://towardsdatascience.com/making-artistic-maps-with-python-9d37f5ea8af0), [example2](https://towardsdatascience.com/creating-beautiful-maps-with-python-6e1aae54c55c)
+- Cartopy, [example](https://rabernat.github.io/research_computing_2018/maps-with-cartopy.html)
+- geoplot [Example](https://residentmario.github.io/geoplot/user_guide/Customizing_Plots.html)
