@@ -315,8 +315,8 @@ if __name__ == "__main__":
     # run_download()
     # run_plotting(["-pp", "gpd"], ["-ce", 3857], ["-t", "Map with OSM layers"], ["-sp", False])
     # run_plotting(["-pp", "gpd"])
-    run_plotting(["-pp", "bokeh"], ["-rb", True])
+    # run_plotting(["-pp", "bokeh"], ["-rb", True])
 
-    # run_plotting(["-pp", "bokeh"], ["-sp", True])
+    run_plotting(["-pp", "bokeh"])
     # mapping_tool run-plotting --plotting_package bokeh --save_plot True --basemap Stamen.Watercolor
     # run()

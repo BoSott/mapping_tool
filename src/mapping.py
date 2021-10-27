@@ -216,8 +216,6 @@ def map_bokeh(map_layer, provider, title, add_func=True):
     logger_f.info("start mapping bokeh")
     start_time = datetime.now()
 
-    # TODO could add some sort of hover tool -> but would need to make the column adjustable
-
     p = figure(title=title, height=950, width=950, toolbar_location="right", tools="pan, wheel_zoom, box_zoom, reset , save")
 
     # hide grid
@@ -303,9 +301,8 @@ def map_bokeh(map_layer, provider, title, add_func=True):
     tile_provider = get_provider(private_provider)
     p.add_tile(tile_provider)
 
-    # add labels if baselayer is Stamen, not all other provider have an extra label baselayer
+    # add labels if baselayer is Stamen -> only Stamen because not all other provider have an extra label baselayer
     # thus -> exclusive Stamen feature
-    # TODO could be more flexible to other providers
     if provider.split(".")[0] == "Stamen":
         labels = "Stamen.TonerLabels"
         private_provider = TileProvider(providers[labels])

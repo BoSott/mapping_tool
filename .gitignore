@@ -1,7 +1,6 @@
 data/output/*
 venv/*
 logs/*
-src/test*
 .vscode/*
 ohsome_log/*
 src/__pycache__/
