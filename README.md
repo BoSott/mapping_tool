@@ -1,6 +1,6 @@
 # OSM Mapping Tool
 
-This commandline mapping tool provides functionality to download and display OSM data via Geopandas Pyplot (static) or Bokeh (interactive). Running this tool thus yields a map of the given search area and specified OSM tag filters. The result will pop up (plotly) or will be displayed in the standard browser of your system. It can be saved automatically or via the GUI.
+This command line mapping tool provides functionality to download and display OSM data via Geopandas Pyplot (static) or Bokeh (interactive). Running this tool thus yields a map of the given search area and specified OSM tag filters. The result will pop up (plotly) or will be displayed in the standard browser of your system. It can be saved automatically or via the GUI.
 
 
 Example Plots with gpd and bokeh and the given input example parameters.
